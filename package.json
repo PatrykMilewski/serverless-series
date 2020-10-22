@@ -1,0 +1,20 @@
+{
+  "name": "serverless-series",
+  "version": "1.0.0",
+  "license": "ISC",
+  "private": true,
+  "workspaces": [
+    "stacks/*",
+    "common/*"
+  ],
+  "scripts": {
+    "ci": "yarn install --frozen-lockfile",
+    "test": "lerna run test --stream --",
+    "coverage": "lerna run coverage --stream --",
+    "deploy": "lerna run deploy --stream --",
+    "create:stack": "sls create --template-path templates/stack"
+  },
+  "devDependencies": {
+    "lerna": "3.22.1"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@serverless-series/utils",
+  "version": "1.0.0",
+  "license": "ISC",
+  "scripts": {
+    "test": "jest",
+    "coverage": "jest --collect-coverage"
+  },
+  "dependencies": {
+    "aws-sdk": "2.758.0",
+    "lambda-log": "2.4.0"
+  }
+}
