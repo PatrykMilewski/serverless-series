@@ -1,5 +1,5 @@
 {
-  "name": "@serverless-series/writer",
+  "name": "@serverless-series/plugin-aws-alerts",
   "version": "1.0.0",
   "license": "ISC",
   "scripts": {

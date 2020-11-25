@@ -1,0 +1,132 @@
+service: plugin-aws-alerts
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+  - serverless-plugin-aws-alerts
+
+package:
+  individually: true
+
+custom:
+  baseName: "sls-series-${self:service}-${opt:stage}"
+
+  emailForCriticalAlarms: "patryk.milewski+critical@merapar.com"
+  emailForNonCriticalAlarms: "patryk.milewski+noncritical@merapar.com"
+
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+  alerts:
+    stages:
+      - patryk
+      - test
+      - staging
+      - prod
+    prefixTemplate: ${self:custom.baseName}
+    definitions:
+      functionErrors:
+        threshold: 1
+        period: 60
+        treatMissingData: notBreaching
+        okActions:
+          - critical
+        alarmActions:
+          - critical
+      # Useful for Streams processing lambdas
+      highIteratorAge:
+        description: 'High Lambda iterator age.'
+        namespace: 'AWS/Lambda'
+        metric: IteratorAge
+        threshold: 600000 # ms
+        statistic: Average
+        period: 60
+        evaluationPeriods: 1
+        datapointsToAlarm: 1
+        comparisonOperator: GreaterThanOrEqualToThreshold
+        treatMissingData: notBreaching
+        okActions:
+          - nonCritical
+        alarmActions:
+          - nonCritical
+    alarms:
+      - functionErrors
+      - highIteratorAge
+    topics:
+      # You can distinguish your critical alarms, so devs are waked up in the middle of the night
+      # only, when there is real problem
+      critical:
+        ok:
+          topic: "arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.baseName}-critical"
+        alarm:
+          topic: "arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.baseName}-critical"
+      nonCritical:
+        ok:
+          topic: "arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.baseName}-non-critical"
+        alarm:
+          topic: "arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.baseName}-non-critical"
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  stackName: ${self:custom.baseName}
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 20
+  logRetentionInDays: 30
+  tracing:
+    lambda: true
+  deploymentBucket:
+    blockPublicAccess: true
+  stackTags:
+    STACK: "${self:provider.stackName}"
+    SERVICE: "${self:service}"
+    STAGE: "${opt:stage}"
+  environment:
+    DEBUG: "false"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
+
+functions:
+  writer:
+    handler: src/writer.handler
+    name: ${self:custom.baseName}-writer
+    description: Returns Hello world!
+    # Thanks to this, this function wont have alarm for highIteratorAge
+    alarms:
+      - name: highIteratorAge
+        enabled: false
+  anotherWriter:
+    handler: src/anotherWriter.handler
+    name: ${self:custom.baseName}-anotherWriter
+    description: Returns Hello world1!
+    # It will also use default definition for functionDuration alarm
+    alarms:
+      - functionDuration
+
+resources:
+  Description: Partners table and changes publishing components
+  Resources:
+
+    NonCriticalAlarmNotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.baseName}-non-critical
+        DisplayName: Alarms topic for ${self:custom.baseName} stack
+        Subscription:
+          - Endpoint: ${self:custom.emailForNonCriticalAlarms}
+            Protocol: email
+
+    CriticalAlarmNotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.baseName}-critical
+        DisplayName: Alarms topic for ${self:custom.baseName} stack
+        Subscription:
+          - Endpoint: ${self:custom.emailForCriticalAlarms}
+            Protocol: email
