@@ -1,0 +1,2 @@
+# serverless-step-functions example
+

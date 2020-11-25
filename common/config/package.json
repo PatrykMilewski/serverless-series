@@ -18,6 +18,7 @@
     "serverless-s3-deploy": "0.9.0",
     "serverless-webpack": "5.3.5",
     "serverless-plugin-aws-alerts": "1.6.1",
+    "serverless-step-functions": "2.29.0",
     "webpack": "4.44.2",
     "jest": "26.6.0"
   }
