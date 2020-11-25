@@ -1,3 +1,5 @@
+# when serverless-webpack is missing :(
+
 Shows potential problems when not using Webpack with Node.js Lambdas.
 
 Reader function which uses the same dependencies as reader function from `../stacks/webpack` 
