@@ -1,0 +1,24 @@
+{
+  "name": "@serverless-series/no-webpack",
+  "version": "1.0.0",
+  "license": "ISC",
+  "scripts": {
+    "test": "jest",
+    "coverage": "jest --collect-coverage",
+    "deploy": "sls deploy",
+    "remove": "sls remove",
+    "print": "sls print",
+    "logs": "sls logs",
+    "metrics": "sls metrics"
+  },
+  "dependencies": {
+    "source-map-support": "0.5.19",
+    "aws-sdk": "2.799.0"
+  },
+  "devDependencies": {
+    "serverless": "2.3.0",
+    "serverless-pseudo-parameters": "2.5.0",
+    "serverless-iam-roles-per-function": "2.0.2",
+    "serverless-s3-deploy": "0.9.0"
+  }
+}

@@ -1,4 +1,4 @@
-service: Writer
+service: writer
 
 plugins:
   - serverless-pseudo-parameters
@@ -12,8 +12,6 @@ package:
 
 custom:
   baseName: "sls-series-${self:service}-${opt:stage}"
-
-  bucketName: "sls-series-writer-${opt:stage}"
 
   emailForAlarms: "patryk.milewski@merapar.com"
 
