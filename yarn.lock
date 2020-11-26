@@ -9937,6 +9937,11 @@ serverless-plugin-resource-tagging@1.0.11:
     underscore "1.8.3"
     user "0.0.0"
 
+serverless-plugin-scripts@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/serverless-plugin-scripts/-/serverless-plugin-scripts-1.0.2.tgz#21808c3cfd0a1a84e48c0660b0f6f370b5665486"
+  integrity sha1-IYCMPP0KGoTkjAZgsPbzcLVmVIY=
+
 serverless-pseudo-parameters@2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/serverless-pseudo-parameters/-/serverless-pseudo-parameters-2.5.0.tgz#f30bf34db166e4b8b22144a8e65aca71b90dd1e6"

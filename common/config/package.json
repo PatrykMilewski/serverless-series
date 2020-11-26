@@ -20,6 +20,7 @@
     "serverless-plugin-aws-alerts": "1.6.1",
     "serverless-step-functions": "2.29.0",
     "serverless-plugin-ifelse": "1.0.6",
+    "serverless-plugin-scripts": "1.0.2",
     "webpack": "4.44.2",
     "jest": "26.6.0"
   }
