@@ -1,0 +1,55 @@
+service: plugin-ifelse
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+  - serverless-plugin-ifelse
+
+package:
+  individually: true
+
+custom:
+  baseName: "sls-series-${self:service}-${opt:stage}"
+
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+  serverlessIfElse:
+    - If: '"${opt:region}" == "eu-west-2"'
+      Exclude:
+        - functions.reader
+    - If: '"${opt:stage}" == "prod"'
+      Set:
+        provider.timeout: 20
+        provider.environment.DEBUG: "false"
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  stackName: ${self:custom.baseName}
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 60
+  logRetentionInDays: 30
+  tracing:
+    lambda: true
+  deploymentBucket:
+    blockPublicAccess: true
+  stackTags:
+    STACK: "${self:provider.stackName}"
+    SERVICE: "${self:service}"
+    STAGE: "${opt:stage}"
+  environment:
+    DEBUG: "true"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
+
+functions:
+  reader:
+    handler: src/reader.handler
+    name: ${self:custom.baseName}

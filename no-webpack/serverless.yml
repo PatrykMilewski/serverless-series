@@ -1,0 +1,72 @@
+service: no-webpack
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-iam-roles-per-function
+  - serverless-s3-deploy
+
+package:
+  individually: true
+
+custom:
+  baseName: "sls-series-${self:service}-${opt:stage}"
+
+  emailForAlarms: "patryk.milewski@merapar.com"
+
+  bucketName: ${self:custom.baseName}
+
+  assets:
+    auto: true
+    targets:
+      - bucket: ${self:custom.bucketName}
+        files:
+          - source: bucket/
+            globs:
+              - "*.txt"
+
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  stackName: ${self:custom.baseName}
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 20
+  logRetentionInDays: 30
+  tracing:
+    lambda: true
+  deploymentBucket:
+    blockPublicAccess: true
+  stackTags:
+    STACK: "${self:provider.stackName}"
+    SERVICE: "${self:service}"
+    STAGE: "${opt:stage}"
+  environment:
+    DEBUG: "false"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+      Resource: !Join ["", [!GetAtt ExampleBucket.Arn, "/*"]]
+
+functions:
+  reader:
+    handler: src/reader.handler
+    name: ${self:custom.baseName}
+    environment:
+      BUCKET_NAME: ${self:custom.bucketName}
+
+resources:
+  Resources:
+
+    ExampleBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}

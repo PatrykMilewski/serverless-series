@@ -5,7 +5,8 @@
   "private": true,
   "workspaces": [
     "stacks/*",
-    "common/*"
+    "common/*",
+    "plugins/*"
   ],
   "scripts": {
     "ci": "yarn install --frozen-lockfile",

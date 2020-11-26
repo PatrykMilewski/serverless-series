@@ -1,0 +1,66 @@
+service: plugin-scripts
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+  - serverless-plugin-scripts
+
+package:
+  individually: true
+
+custom:
+  baseName: "sls-series-${self:service}-${opt:stage}"
+
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+  scripts:
+    hooks:
+      'package:cleanup':  echo '\n hook cleanup \n'
+      'package:initialize': echo '\n hook initialize \n'
+      'package:setupProviderConfiguration': echo '\n hook setupProviderConfiguration \n'
+      'package:createDeploymentArtifacts': echo '\n hook createDeploymentArtifacts \n'
+      'package:compileFunctions': echo '\n hook compileFunctions \n'
+      'package:compileEvents': echo '\n hook compileEvents \n'
+      'package:finalize': echo '\n hook finalize \n'
+      'before:deploy:deploy': echo '\n hook deploy \n'
+      'aws:deploy:deploy:createStack': echo '\n hook createStack \n'
+      'aws:deploy:deploy:checkForChanges': echo '\n hook checkForChanges \n'
+      'aws:deploy:deploy:uploadArtifacts': echo '\n hook uploadArtifacts \n'
+      'aws:deploy:deploy:validateTemplate': echo '\n hook validateTemplate \n'
+      'aws:deploy:deploy:updateStack': echo '\n hook updateStack \n'
+      'aws:deploy:finalize:cleanup':  echo '\n hook cleanup \n'
+      'remove:remove': echo '\n hook remove \n'
+      'invoke:invoke': echo '\n hook invoke \n'
+      'metrics:metrics': echo '\n hook metrics \n'
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  stackName: ${self:custom.baseName}
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 60
+  logRetentionInDays: 30
+  tracing:
+    lambda: true
+  deploymentBucket:
+    blockPublicAccess: true
+  stackTags:
+    STACK: "${self:provider.stackName}"
+    SERVICE: "${self:service}"
+    STAGE: "${opt:stage}"
+  environment:
+    DEBUG: "true"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
+
+functions:
+  reader:
+    handler: src/reader.handler
+    name: ${self:custom.baseName}

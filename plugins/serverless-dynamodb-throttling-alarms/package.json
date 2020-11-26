@@ -1,0 +1,8 @@
+{
+  "name": "@serverless-series/serverless-dynamodb-throttling-alarms",
+  "version": "1.0.0",
+  "license": "ISC",
+  "dependencies": {
+    "lodash.merge": "4.6.2"
+  }
+}

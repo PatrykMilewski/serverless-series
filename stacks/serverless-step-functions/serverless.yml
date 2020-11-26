@@ -1,0 +1,135 @@
+service: step-functions
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+  - serverless-step-functions
+
+package:
+  individually: true
+
+custom:
+  baseName: "sls-series-${self:service}-${opt:stage}"
+
+  emailForAlarms: "patryk.milewski@merapar.com"
+
+  statusTableName: ${self:custom.baseName}-status
+  simpleMachineStartEvent: "serverlessSeries.stateMachine.start"
+
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  stackName: ${self:custom.baseName}
+
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 20
+
+  logRetentionInDays: 30
+
+  tracing:
+    lambda: true
+
+  deploymentBucket:
+    blockPublicAccess: true
+
+  stackTags:
+    STACK: "${self:provider.stackName}"
+    SERVICE: "${self:service}"
+    STAGE: "${opt:stage}"
+
+  environment:
+    DEBUG: "false"
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
+
+functions:
+  eventsPublisher:
+    handler: src/eventsPublisher.handler
+    name: ${self:custom.baseName}-eventsPublisher
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - events:PutEvents
+        Resource: "arn:aws:events:#{AWS::Region}:#{AWS::AccountId}:event-bus/default"
+
+stepFunctions:
+  validate: true
+  stateMachines:
+    SimpleMachine:
+      name: ${self:custom.baseName}
+      role: !GetAtt SimpleMachineRole.Arn
+      dependsOn:
+        - SimpleMachineRole
+        - StatusTable
+      definition: ${file(state-machine.yaml)}
+      events:
+        - cloudwatchEvent:
+            event:
+              source:
+                - ${self:custom.simpleMachineStartEvent}
+      alarms:
+        topics:
+          ok: "arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.baseName}-alarms"
+          alarm: "arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.baseName}-alarms"
+        metrics:
+          - executionsTimedOut
+          - executionsFailed
+          - executionsAborted
+          - executionThrottled
+        treatMissingData: notBreaching
+
+resources:
+  Resources:
+
+    StatusTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.statusTableName}
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+    SimpleMachineRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - states.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: ${self:custom.baseName}-stepFunction
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:UpdateItem
+                  Resource: !GetAtt StatusTable.Arn
+
+    AlarmNotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.baseName}-alarm
+        DisplayName: Alarms topic for ${self:custom.baseName} stack
+        Subscription:
+          - Endpoint: ${self:custom.emailForAlarms}
+            Protocol: email

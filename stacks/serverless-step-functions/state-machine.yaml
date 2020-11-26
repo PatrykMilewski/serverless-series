@@ -1,0 +1,46 @@
+StartAt: ExtractEvent
+
+States:
+
+  ExtractEvent:
+    Type: Pass
+    InputPath: $.detail
+    ResultPath: $.input.input
+    OutputPath: $.input
+    Next: RecordStart
+
+  RecordStart:
+    Type: Task
+    Resource: arn:aws:states:::dynamodb:putItem
+    Parameters:
+      TableName: ${self:custom.statusTableName}
+      Item:
+        id:
+          S.$: $.input.id
+        status:
+          S: IN_PROGRESS
+        executionId:
+          S.$: $$.Execution.Id
+        executionStartTime:
+          S.$: $$.Execution.StartTime
+    ResultPath: null
+    Next: RecordSuccess
+
+  RecordSuccess:
+    Type: Task
+    Resource: arn:aws:states:::dynamodb:updateItem
+    Parameters:
+      TableName: ${self:custom.statusTableName}
+      Key:
+        id:
+          S.$: $.input.id
+      UpdateExpression: "SET #status = :status"
+      ExpressionAttributeNames:
+        "#status": status
+      ExpressionAttributeValues:
+        ":status":
+          S: SUCCESSFUL
+    ResultPath: null
+    End: true
+
+
