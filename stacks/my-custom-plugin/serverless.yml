@@ -1,0 +1,98 @@
+service: my-custom-plugin
+
+plugins:
+  - serverless-pseudo-parameters
+  - '@serverless-series/serverless-dynamodb-throttling-alarms'
+
+package:
+  individually: true
+
+custom:
+  baseName: "sls-series-${self:service}-${opt:stage}"
+
+  emailForAlarms: "patryk.milewski@merapar.com"
+
+provider:
+  name: aws
+  stage: ${opt:stage}
+  stackName: ${self:custom.baseName}
+  timeout: 20
+  deploymentBucket:
+    blockPublicAccess: true
+  stackTags:
+    STACK: "${self:provider.stackName}"
+    SERVICE: "${self:service}"
+    STAGE: "${opt:stage}"
+
+resources:
+  Resources:
+
+    FirstTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.baseName}-1
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+    SecondTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.baseName}-2
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+    ThirdTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.baseName}-3
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+    FourthTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.baseName}-4
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+    FifthTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.baseName}-5
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+
+    AlarmTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: alarm-topic
+        DisplayName: Alarms topic for ${self:custom.baseName} stack
+        Subscription:
+          - Endpoint: ${self:custom.emailForAlarms}
+            Protocol: email
+
