@@ -1,5 +1,5 @@
 {
-  "name": "@serverless-series/plugin-aws-alerts",
+  "name": "@serverless-series/serverless-webpack",
   "version": "1.0.0",
   "license": "ISC",
   "scripts": {

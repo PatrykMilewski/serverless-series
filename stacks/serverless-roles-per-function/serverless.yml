@@ -75,7 +75,6 @@ functions:
         Resource: !Join ["", [!GetAtt ExampleBucket.Arn, "/*"]]
 
 resources:
-  Description: Partners table and changes publishing components
   Resources:
 
     ExampleBucket:

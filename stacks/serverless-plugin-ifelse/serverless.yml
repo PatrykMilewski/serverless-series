@@ -1,10 +1,10 @@
-service: webpack
+service: plugin-ifelse
 
 plugins:
   - serverless-pseudo-parameters
   - serverless-webpack
   - serverless-iam-roles-per-function
-  - serverless-s3-deploy
+  - serverless-plugin-ifelse
 
 package:
   individually: true
@@ -12,70 +12,44 @@ package:
 custom:
   baseName: "sls-series-${self:service}-${opt:stage}"
 
-  emailForAlarms: "patryk.milewski@merapar.com"
-
-  bucketName: ${self:custom.baseName}
-
-  assets:
-    auto: true
-    targets:
-      - bucket: ${self:custom.bucketName}
-        files:
-          - source: bucket/
-            globs:
-              - "*.txt"
-
   serverless-iam-roles-per-function:
     defaultInherit: true
+
+  serverlessIfElse:
+    - If: '"${opt:region}" == "eu-west-2"'
+      Exclude:
+        - functions.reader
+    - If: '"${opt:stage}" == "prod"'
+      Set:
+        provider.timeout: 20
+        provider.environment.DEBUG: "false"
 
 provider:
   name: aws
   stage: ${opt:stage}
   stackName: ${self:custom.baseName}
-
   runtime: nodejs12.x
   memorySize: 256
-  timeout: 20
-
+  timeout: 60
   logRetentionInDays: 30
-
   tracing:
     lambda: true
-
   deploymentBucket:
     blockPublicAccess: true
-
   stackTags:
     STACK: "${self:provider.stackName}"
     SERVICE: "${self:service}"
     STAGE: "${opt:stage}"
-
   environment:
-    DEBUG: "false"
-
+    DEBUG: "true"
   iamRoleStatements:
     - Effect: Allow
       Action:
         - xray:PutTelemetryRecords
         - xray:PutTraceSegments
       Resource: "*"
-    - Effect: Allow
-      Action:
-        - s3:GetObject
-      Resource: !Join ["", [!GetAtt ExampleBucket.Arn, "/*"]]
 
 functions:
   reader:
     handler: src/reader.handler
     name: ${self:custom.baseName}
-    environment:
-      BUCKET_NAME: ${self:custom.bucketName}
-
-resources:
-  Description: Partners table and changes publishing components
-  Resources:
-
-    ExampleBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:custom.bucketName}

@@ -1,7 +1,8 @@
-service: no-webpack
+service: webpack
 
 plugins:
   - serverless-pseudo-parameters
+  - serverless-webpack
   - serverless-iam-roles-per-function
   - serverless-s3-deploy
 
@@ -31,20 +32,27 @@ provider:
   name: aws
   stage: ${opt:stage}
   stackName: ${self:custom.baseName}
+
   runtime: nodejs12.x
   memorySize: 256
   timeout: 20
+
   logRetentionInDays: 30
+
   tracing:
     lambda: true
+
   deploymentBucket:
     blockPublicAccess: true
+
   stackTags:
     STACK: "${self:provider.stackName}"
     SERVICE: "${self:service}"
     STAGE: "${opt:stage}"
+
   environment:
     DEBUG: "false"
+
   iamRoleStatements:
     - Effect: Allow
       Action:

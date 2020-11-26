@@ -1,0 +1,21 @@
+{
+  "name": "@serverless-series/serverless-plugin-ifelse",
+  "version": "1.0.0",
+  "license": "ISC",
+  "scripts": {
+    "test": "jest",
+    "coverage": "jest --collect-coverage",
+    "deploy": "sls deploy",
+    "remove": "sls remove",
+    "print": "sls print",
+    "logs": "sls logs",
+    "metrics": "sls metrics"
+  },
+  "dependencies": {
+    "@serverless-series/utils": "1.0.0",
+    "source-map-support": "0.5.19"
+  },
+  "devDependencies": {
+    "@serverless-series/config": "1.0.0"
+  }
+}

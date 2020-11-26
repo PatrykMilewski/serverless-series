@@ -1,5 +1,5 @@
 {
-  "name": "@serverless-series/roles-per-function",
+  "name": "@serverless-series/serverless-step-functions",
   "version": "1.0.0",
   "license": "ISC",
   "scripts": {
@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "@serverless-series/utils": "1.0.0",
-    "source-map-support": "0.5.19",
-    "uuid": "8.3.1"
+    "source-map-support": "0.5.19"
   },
   "devDependencies": {
     "@serverless-series/config": "1.0.0"

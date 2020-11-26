@@ -9924,6 +9924,11 @@ serverless-plugin-aws-alerts@1.6.1:
   dependencies:
     lodash "^4.17.10"
 
+serverless-plugin-ifelse@1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/serverless-plugin-ifelse/-/serverless-plugin-ifelse-1.0.6.tgz#60d22949fa639775511642f0051f5e9f60b13c15"
+  integrity sha512-4IX9+ovDAH9O2U8Eu1gBRu8MHo3bzcr57N9GBTFlmulvhfC1/fqXFplcgKvwGfHyOLr9pfxaK3kTnoidYwqAVg==
+
 serverless-plugin-resource-tagging@1.0.11:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/serverless-plugin-resource-tagging/-/serverless-plugin-resource-tagging-1.0.11.tgz#63e26bc7d8eb4348c490467e537472750ed39da5"

@@ -110,7 +110,6 @@ functions:
       - functionDuration
 
 resources:
-  Description: Partners table and changes publishing components
   Resources:
 
     NonCriticalAlarmNotificationTopic:
